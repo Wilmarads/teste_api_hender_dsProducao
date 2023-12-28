@@ -5,7 +5,13 @@ from flask             import Flask, request, Response
 from rossmann.Rossmann import Rossmann
 
 # loading model
-model = pickle.load( open( '/teste_api_hender_dsProducao/model/model_rossmann.pkl', 'rb') )
+current_dir = os.path.dirname(os.path.abspath(__file__))  # Diretório atual do script
+model_path = os.path.join(current_dir, 'model', 'model_rossmann.pkl')
+
+# Carregando o modelo
+with open(model_path, 'rb') as file:
+    model = pickle.load(file)
+# model = pickle.load( open( '/model/model_rossmann.pkl', 'rb') )
 
 # initialize API
 app = Flask( __name__ )
