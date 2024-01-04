@@ -6,7 +6,36 @@ import math
 import datetime
 
 class Rossmann( object ):
+  '''A classe Rossmann é um conjunto de métodos para manipulação, limpeza e preparação de dados para um modelo preditivo, além de realizar previsões. 
+  Seus métodos incluem desde a limpeza e transformação dos dados até a preparação final para a previsão. 
+  Isso envolve ajustes nos tipos de dados, criação de novas features, escalonamento, codificação de variáveis categóricas e geração de previsões a 
+  partir de um modelo treinado.
+
+  Input: 
+  1. df1, df2, df5: DataFrames com dados para limpeza, engenharia de features e preparação, respectivamente.
+  2. model: Modelo de machine learning treinado.
+  3. original_data: Dados originais para os quais as previsões serão incorporadas.
+  4. test_data: Dados de teste para gerar previsões.
+
+  Output:
+
+  Métodos de limpeza, engenharia de features e preparação retornam DataFrames processados.
+  get_prediction() retorna os dados originais com uma nova coluna contendo as previsões do modelo em formato JSON.
+
+  Esses métodos encapsulam etapas comuns em pipelines de pré-processamento e previsão de modelos de machine learning aplicados ao contexto 
+  específico da previsão de vendas da Rossmann.
+  '''
   def __init__( self ):
+    '''Esta função __init__ da classe Rossmann é um método especial que é chamado quando uma instância da classe é criada. 
+    Ela é responsável por inicializar os atributos da classe, configurando os caminhos dos arquivos e carregando os scalers necessários para o 
+    pré-processamento dos dados no contexto do modelo de previsão de vendas da Rossmann.
+
+    Input: Não recebe input direto, mas depende dos arquivos presentes no caminho definido em self.home_path.
+    Output:
+
+    Atributos da classe Rossmann são inicializados, contendo os scalers carregados a partir dos arquivos específicos definidos no caminho self.home_path. 
+    Estes scalers são utilizados em etapas posteriores de pré-processamento e transformação dos dados para o modelo de previsão.
+    '''
     self.home_path=''
     self.competition_distance_scaler   = pickle.load( open( self.home_path + 'parameter/competition_distance_scaler.pkl', 'rb') )
     self.competition_time_month_scaler = pickle.load( open( self.home_path + 'parameter/competition_time_month_scaler.pkl', 'rb') )
@@ -15,7 +44,16 @@ class Rossmann( object ):
     self.store_type_scaler             = pickle.load( open( self.home_path + 'parameter/store_type_scaler.pkl', 'rb') )
 
   def data_cleaning( self, df1 ):
+    '''A função data_cleaning na classe Rossmann realiza diversas operações de pré-processamento nos dados para padronizá-los e prepará-los para análise.
+    Isso inclui a renomeação de colunas para o formato snake_case, conversão de tipos de dados (como a coluna 'date' para datetime), preenchimento de 
+    valores ausentes em algumas colunas específicas ('competition_distance', 'competition_open_since_month', 'competition_open_since_year', 
+    'promo2_since_week', 'promo2_since_year', 'promo_interval'), e criação de novas features com base nas colunas existentes.
 
+    Input: Recebe um DataFrame df1 contendo os dados a serem limpos e preparados.
+
+    Output: Retorna o DataFrame df1 após a aplicação das transformações de limpeza e pré-processamento. 
+    Este DataFrame estará pronto para ser usado em etapas subsequentes, como engenharia de features ou modelagem. 
+    '''
     ## 1.1. Rename Columns
     cols_old = ['Store', 'DayOfWeek', 'Date', 'Open', 'Promo', 'StateHoliday', 'SchoolHoliday',
                 'StoreType', 'Assortment', 'CompetitionDistance', 'CompetitionOpenSinceMonth',
@@ -68,6 +106,16 @@ class Rossmann( object ):
     return df1
 
   def feature_engineering( self, df2 ):
+    '''A função feature_engineering na classe Rossmann realiza a criação e transformação de features nos dados, adicionando informações relevantes que 
+    podem ajudar no processo de modelagem. Esta função inclui a extração de informações temporais (como ano, mês, dia, semana do ano), cálculos de tempo
+    desde eventos específicos (como a competição desde a abertura da loja), e transformações de variáveis categóricas para representações numéricas mais 
+    úteis.
+
+    Input: Recebe um DataFrame df2 contendo os dados a serem processados e enriquecidos com novas features.
+
+    Output: Retorna o DataFrame df2 após a aplicação das transformações de engenharia de features. Este DataFrame terá colunas adicionais que capturam 
+    informações temporais, calculadas a partir dos dados existentes, e outras features derivadas para melhorar o desempenho do modelo de previsão.
+    '''
     # year
     df2['year'] = df2['date'].dt.year
 
@@ -109,6 +157,16 @@ class Rossmann( object ):
     return df2
 
   def data_preparation( self, df5 ):
+    '''A função data_preparation na classe Rossmann executa o processo final de preparação dos dados, realizando escalonamento de variáveis numéricas, 
+    codificação de variáveis categóricas e criação de novas features para serem utilizadas no modelo de previsão. 
+    Essa etapa é fundamental para garantir que os dados estejam formatados corretamente e prontos para serem usados no treinamento do modelo.
+
+    Input: Recebe um DataFrame df5 que contém os dados após passarem por etapas anteriores de limpeza e engenharia de features.
+
+    Output: Retorna um DataFrame com as colunas selecionadas e as transformações finais aplicadas, pronto para ser utilizado no treinamento do modelo 
+    de machine learning. Essas transformações incluem escalonamento de variáveis numéricas, codificação de variáveis categóricas e a geração de features
+    adicionais para enriquecer os dados.
+    '''
     ## 5.2. Rescaling
     # competition distance
     df5['competition_distance'] = self.competition_distance_scaler.fit_transform( df5[['competition_distance']].values )
@@ -156,6 +214,20 @@ class Rossmann( object ):
     return df5[ cols_selected ]
 
   def get_prediction( self, model, original_data, test_data ):
+    '''A função get_prediction na classe Rossmann é responsável por gerar previsões usando um modelo treinado e incorporar essas previsões aos dados 
+    originais. Ela recebe o modelo treinado, os dados originais e os dados de teste, executa a previsão usando o modelo nos dados de teste e junta essas 
+    previsões ao conjunto de dados original.
+
+    Input:
+
+    1. model: Modelo de machine learning previamente treinado.
+    2. original_data: Dados originais aos quais as previsões serão adicionadas.
+    3. test_data: Dados de teste nos quais o modelo fará previsões.
+
+    Output: Retorna um JSON contendo os dados originais com uma nova coluna chamada 'prediction', que contém as previsões feitas pelo modelo para os dados 
+    de teste. Este formato permite uma fácil visualização das previsões associadas aos dados originais. Esses dados estão prontos para serem analisados ou 
+    utilizados em outras aplicações.
+    '''
     # prediction
     pred = model.predict( test_data )
 

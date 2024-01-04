@@ -18,6 +18,23 @@ app = Flask( __name__ )
 
 @app.route( '/rossmann/predict', methods=['POST'] )
 def rossmann_predict():
+    '''A função rossmann_predict é uma função de roteamento em uma aplicação web usando o framework Flask que processa solicitações de previsão para 
+    um modelo Rossmann. Ela recebe dados de teste em formato JSON, limpa, executa engenharia de features, prepara os dados e realiza previsões usando 
+    um modelo previamente treinado da classe Rossmann.
+
+    Input:
+
+    1. Dados de teste em formato JSON, recebidos por meio de uma solicitação web (solicitação POST).
+    2. model: Modelo de machine learning previamente treinado.
+
+    Output:
+
+    1. Retorna um JSON contendo os dados originais com uma nova coluna chamada 'prediction', que contém as previsões feitas pelo modelo para os dados de teste.
+    2. Caso não haja dados de teste, retorna uma resposta vazia em formato JSON com status 200.
+    
+    A função é projetada para ser integrada a um servidor web, onde a rota '/rossmann_predict' manipula as solicitações de previsão enviadas para esse
+    endpoint específico.
+    '''
     test_json = request.get_json()
 
     if test_json: # there is data
